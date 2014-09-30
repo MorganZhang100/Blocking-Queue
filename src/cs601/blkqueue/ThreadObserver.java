@@ -37,13 +37,19 @@ class ThreadObserver implements Runnable {
             }
 
             StackTraceElement[] stacks = threadToMonitor.getStackTrace();
-            String methodName = stacks[0].getMethodName();
+            if(stacks.length!=0) {
+                String methodName = stacks[0].getMethodName();
 
-            if(histogram.get(methodName)==null) histogram.put(methodName,1L);
-            else {
-                Long times = histogram.get(methodName);
-                histogram.put(methodName,times+1);
+                if(histogram.get(methodName)==null) histogram.put(methodName,1L);
+                else {
+                    Long times = histogram.get(methodName);
+                    histogram.put(methodName,times+1);
+                }
+
+                //System.out.println(">>>> " + methodName);
             }
+
+
 
             LockSupport.parkNanos(MONITORING_PERIOD);
         }
