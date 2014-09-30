@@ -13,7 +13,7 @@ public class RingBuffer<T> implements MessageQueue<T> {
     private final int size;
 
 	public RingBuffer(int n) {
-        //if(!isPowerOfTwo(n)) throw IllegalArgumentException;
+        if(!isPowerOfTwo(n)) throw new IllegalArgumentException();
         this.items = new ArrayList<T>(n);
         size = n;
 	}
