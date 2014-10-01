@@ -46,7 +46,7 @@ class ThreadObserver implements Runnable {
                     histogram.put(methodName,times+1);
                 }
 
-                //System.out.println(">>>> " + methodName);
+                //if(methodName != "sleep") System.out.println(">>>> " + methodName);
             }
 
 

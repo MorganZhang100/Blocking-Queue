@@ -9,11 +9,12 @@ public class RingBuffer<T> implements MessageQueue<T> {
 	private final AtomicLong w = new AtomicLong(-1);	// just wrote location
 	private final AtomicLong r = new AtomicLong(0);		// about to read location
 
+    boolean debug_flag = false;
+
     private ArrayList<T> items;
     private final int size;
 
 	public RingBuffer(int n) {
-        if(!isPowerOfTwo(n)) throw new IllegalArgumentException();
         this.items = new ArrayList<T>(n);
         size = n;
 	}
@@ -37,22 +38,25 @@ public class RingBuffer<T> implements MessageQueue<T> {
             w.incrementAndGet();
         }
 
-        //System.out.println("--- " + w.get());
+        if(debug_flag) System.out.println("--- " + w.get() + " （" + r.get() + " ) "  + (int)w.get()%size + " " + v);
 	}
 
 	@Override
 	public T take() throws InterruptedException {
         while (w.get()<r.get()) waitForDataAt(r.get());
 
-        // we have the lock and state we're seeking; remove, return element
         T o = items.get((int) (r.getAndIncrement()%size));
+
+        if(debug_flag) System.out.println(" ++++++++++++++++++++++++ " + r.get() + " " + (int)(r.get()-1)%size + " " + o);
 
         return o;
 	}
 
 	// spin wait instead of lock for low latency store
 	void waitForFreeSlotAt(final long writeIndex) {
+        if(debug_flag) System.out.println(writeIndex + " " + r.get());
         while (writeIndex-r.get()==size-1) try {
+            if(debug_flag) System.out.println("@@@@@@@@@@@@@@@@ " + writeIndex + " " + r.get());
             sleep(1);
         } catch (InterruptedException e) {
             e.printStackTrace();
@@ -61,7 +65,9 @@ public class RingBuffer<T> implements MessageQueue<T> {
 
 	// spin wait instead of lock for low latency pickup
 	void waitForDataAt(final long readIndex) {
+        if(debug_flag) System.out.println(readIndex + " " + w.get());
         while (readIndex>w.get()) try {
+            if(debug_flag) System.out.print("~~~~~~~~~~~~~~~~~~~~~" + readIndex + " " + w.get());
             sleep(1);
         } catch (InterruptedException e) {
             e.printStackTrace();
