@@ -9,13 +9,17 @@ public class RingBuffer<T> implements MessageQueue<T> {
 	private final AtomicLong w = new AtomicLong(-1);	// just wrote location
 	private final AtomicLong r = new AtomicLong(0);		// about to read location
 
-    boolean debug_flag = false;
+    boolean debug_flag = true;
 
-    private ArrayList<T> items;
+    //private ArrayList<T> items;
     private final int size;
 
+    T[] items;
+
 	public RingBuffer(int n) {
-        this.items = new ArrayList<T>(n);
+        //this.items = new ArrayList<T>(n);
+        items = (T[]) new Object[n];
+
         size = n;
 	}
 
@@ -31,21 +35,26 @@ public class RingBuffer<T> implements MessageQueue<T> {
 
 	@Override
 	public void put(T v) throws InterruptedException {
-        while ( w.get()-r.get() == size-1 ) waitForFreeSlotAt(w.get());
-        if(w.get()>size-2) items.set((int) w.incrementAndGet()%size,v);
-        else {
-            items.add(v);
-            w.incrementAndGet();
-        }
+        while ( w.get()-r.get() == size-1 ) /*waitForFreeSlotAt(w.get())*/;
+//        if(w.get()>size-2) items.set((int) w.incrementAndGet()%size,v);
+//        else {
+//            items.add(v);
+//            w.incrementAndGet();
+//        }
+
+        //items.set((int) w.incrementAndGet()%size,v);
+        items[(int)w.incrementAndGet()%size] = v;
 
         if(debug_flag) System.out.println("--- " + w.get() + " （" + r.get() + " ) "  + (int)w.get()%size + " " + v);
 	}
 
 	@Override
 	public T take() throws InterruptedException {
-        while (w.get()<r.get()) waitForDataAt(r.get());
+        while (w.get()<r.get()) /*waitForDataAt(r.get())*/;
 
-        T o = items.get((int) (r.getAndIncrement()%size));
+        //T o = items.get((int) (r.getAndIncrement()%size));
+        int index = (int) (r.getAndIncrement()%size);
+        T o = items[index];
 
         if(debug_flag) System.out.println(" ++++++++++++++++++++++++ " + r.get() + " " + (int)(r.get()-1)%size + " " + o);
 
