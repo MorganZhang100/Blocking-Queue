@@ -9,7 +9,7 @@ public class RingBuffer<T> implements MessageQueue<T> {
 	private final AtomicLong w = new AtomicLong(-1);	// just wrote location
 	private final AtomicLong r = new AtomicLong(0);		// about to read location
 
-    boolean debug_flag = true;
+    boolean debug_flag = false;
 
     //private ArrayList<T> items;
     private final int size;
@@ -33,33 +33,82 @@ public class RingBuffer<T> implements MessageQueue<T> {
 		return onbits==1;
 	}
 
-	@Override
-	public void put(T v) throws InterruptedException {
-        while ( w.get()-r.get() == size-1 ) /*waitForFreeSlotAt(w.get())*/;
-//        if(w.get()>size-2) items.set((int) w.incrementAndGet()%size,v);
-//        else {
-//            items.add(v);
-//            w.incrementAndGet();
-//        }
+//    @Override
+//    public void put(T v) throws InterruptedException {
+//        while ( w.get()-r.get() == size-1 ) /*waitForFreeSlotAt(w.get())*/;
+//
+//        items[(int)w.incrementAndGet()%size] = v;
+//
+//        if(debug_flag) System.out.println("--- " + w.get() + " （" + r.get() + " ) "  + (int)w.get()%size + " " + v);
+//    }
 
-        //items.set((int) w.incrementAndGet()%size,v);
-        items[(int)w.incrementAndGet()%size] = v;
+    @Override
+    public void put(T v) throws InterruptedException {
+        while (true) {
+            long wIndex = w.get();
+            long rIndex = r.get();
+            long wNewIndex = wIndex+1;
 
-        if(debug_flag) System.out.println("--- " + w.get() + " （" + r.get() + " ) "  + (int)w.get()%size + " " + v);
-	}
+            T preValue = items[(int)wNewIndex%size];
 
-	@Override
-	public T take() throws InterruptedException {
-        while (w.get()<r.get()) /*waitForDataAt(r.get())*/;
+            if( wIndex-rIndex == size-1 ) {
+                waitForFreeSlotAt(wIndex);
+                continue;
+            }
 
-        //T o = items.get((int) (r.getAndIncrement()%size));
-        int index = (int) (r.getAndIncrement()%size);
-        T o = items[index];
+            items[(int)wNewIndex%size] = v;
 
-        if(debug_flag) System.out.println(" ++++++++++++++++++++++++ " + r.get() + " " + (int)(r.get()-1)%size + " " + o);
+            if(w.compareAndSet(wIndex,wIndex+1)) {
+                if(debug_flag) System.out.println("--- wNewIndex[" + wNewIndex + "] w.get()" + w.get() + " r.get()（" + r.get() + " ) 在 "  + (int)wNewIndex%size + " 写入 " + v);
 
-        return o;
-	}
+                return;
+            }
+            else {
+                items[(int)wNewIndex%size] = preValue;
+                continue;
+            }
+        }
+    }
+
+//	@Override
+//	public T take() throws InterruptedException {
+//        while (w.get()<r.get()) /*waitForDataAt(r.get())*/;
+//
+//        //T o = items.get((int) (r.getAndIncrement()%size));
+//        int index = (int) (r.getAndIncrement()%size);
+//        T o = items[index];
+//
+//        if(debug_flag) System.out.println(" ++++++++++++++++++++++++ " + r.get() + " " + (int)(r.get()-1)%size + " " + o);
+//
+//        return o;
+//	}
+
+    @Override
+    public T take() throws InterruptedException {
+        //while (w.get()<r.get()) /*waitForDataAt(r.get())*/;
+
+        while(true) {
+            long rIndex = r.get();
+            long wIndex = w.get();
+
+            if(wIndex < rIndex) {
+                waitForDataAt(rIndex);
+                continue;
+            }
+
+            int index = (int) (rIndex %size);
+
+            T o = items[index];
+
+            if(r.compareAndSet(rIndex,rIndex+1)) {
+
+                if(debug_flag) System.out.println(" ++++++++++++++++++++++++ rIndex[" + rIndex + "] r.get()" + r.get() + " 从 " + (int)(rIndex)%size + " 取出 " + o);
+
+                return o;
+            }
+            else continue;
+        }
+    }
 
 	// spin wait instead of lock for low latency store
 	void waitForFreeSlotAt(final long writeIndex) {
