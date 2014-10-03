@@ -40,17 +40,13 @@ class ThreadObserver implements Runnable {
             if(stacks.length!=0) {
                 String className = stacks[0].getClassName();
                 String methodName = stacks[0].getMethodName();
-
-                if(histogram.get(methodName)==null) histogram.put(className + "." + methodName,1L);
+                String classAndMethodName = className + "." + methodName;
+                if(histogram.get(classAndMethodName)==null) histogram.put(classAndMethodName,1L);
                 else {
-                    Long times = histogram.get(methodName);
-                    histogram.put(methodName,times+1);
+                    Long times = histogram.get(classAndMethodName);
+                    histogram.put(classAndMethodName,times+1);
                 }
-
-                //if(methodName != "sleep") System.out.println(">>>> " + methodName);
             }
-
-
 
             LockSupport.parkNanos(MONITORING_PERIOD);
         }
