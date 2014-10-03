@@ -1,8 +1,6 @@
 package cs601.blkqueue;
 
-import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicLong;
-
 import static java.lang.Thread.sleep;
 
 public class RingBuffer<T> implements MessageQueue<T> {
@@ -11,16 +9,17 @@ public class RingBuffer<T> implements MessageQueue<T> {
 
     boolean debug_flag = false;
 
-    //private ArrayList<T> items;
     private final int size;
+    private final int sizeMinusOne;
 
     T[] items;
 
 	public RingBuffer(int n) {
-        //this.items = new ArrayList<T>(n);
         items = (T[]) new Object[n];
-
         size = n;
+        sizeMinusOne = n-1;
+
+        if(!isPowerOfTwo(n)) throw new IllegalArgumentException();
 	}
 
 	// http://graphics.stanford.edu/~seander/bithacks.html#CountBitsSetParallel
@@ -49,14 +48,14 @@ public class RingBuffer<T> implements MessageQueue<T> {
             long rIndex = r.get();
             long wNewIndex = wIndex+1;
 
-            T preValue = items[(int)wNewIndex%size];
+            T preValue = items[(int)wNewIndex & sizeMinusOne];
 
-            if( wIndex-rIndex == size-1 ) {
+            if( wIndex-rIndex == sizeMinusOne ) {
                 waitForFreeSlotAt(wIndex);
                 continue;
             }
 
-            items[(int)wNewIndex%size] = v;
+            items[(int)wNewIndex & sizeMinusOne] = v;
 
             if(w.compareAndSet(wIndex,wIndex+1)) {
                 if(debug_flag) System.out.println("--- wNewIndex[" + wNewIndex + "] w.get()" + w.get() + " r.get()（" + r.get() + " ) 在 "  + (int)wNewIndex%size + " 写入 " + v);
@@ -64,7 +63,7 @@ public class RingBuffer<T> implements MessageQueue<T> {
                 return;
             }
             else {
-                items[(int)wNewIndex%size] = preValue;
+                items[(int)wNewIndex & sizeMinusOne] = preValue;
                 continue;
             }
         }
@@ -96,7 +95,7 @@ public class RingBuffer<T> implements MessageQueue<T> {
                 continue;
             }
 
-            int index = (int) (rIndex %size);
+            int index = (int) (rIndex & sizeMinusOne);
 
             T o = items[index];
 
@@ -110,22 +109,18 @@ public class RingBuffer<T> implements MessageQueue<T> {
         }
     }
 
-	// spin wait instead of lock for low latency store
 	void waitForFreeSlotAt(final long writeIndex) {
         if(debug_flag) System.out.println(writeIndex + " " + r.get());
-        while (writeIndex-r.get()==size-1) try {
-            if(debug_flag) System.out.println("@@@@@@@@@@@@@@@@ " + writeIndex + " " + r.get());
+        while (writeIndex-r.get()==sizeMinusOne) try {
             sleep(1);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
     }
 
-	// spin wait instead of lock for low latency pickup
 	void waitForDataAt(final long readIndex) {
         if(debug_flag) System.out.println(readIndex + " " + w.get());
         while (readIndex>w.get()) try {
-            if(debug_flag) System.out.print("~~~~~~~~~~~~~~~~~~~~~" + readIndex + " " + w.get());
             sleep(1);
         } catch (InterruptedException e) {
             e.printStackTrace();

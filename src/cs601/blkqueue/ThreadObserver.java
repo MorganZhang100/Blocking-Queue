@@ -38,9 +38,10 @@ class ThreadObserver implements Runnable {
 
             StackTraceElement[] stacks = threadToMonitor.getStackTrace();
             if(stacks.length!=0) {
+                String className = stacks[0].getClassName();
                 String methodName = stacks[0].getMethodName();
 
-                if(histogram.get(methodName)==null) histogram.put(methodName,1L);
+                if(histogram.get(methodName)==null) histogram.put(className + "." + methodName,1L);
                 else {
                     Long times = histogram.get(methodName);
                     histogram.put(methodName,times+1);
