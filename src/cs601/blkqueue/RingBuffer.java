@@ -32,15 +32,6 @@ public class RingBuffer<T> implements MessageQueue<T> {
 		return onbits==1;
 	}
 
-//    @Override
-//    public void put(T v) throws InterruptedException {
-//        while ( w.get()-r.get() == size-1 ) /*waitForFreeSlotAt(w.get())*/;
-//
-//        items[(int)w.incrementAndGet()%size] = v;
-//
-//        if(debug_flag) System.out.println("--- " + w.get() + " （" + r.get() + " ) "  + (int)w.get()%size + " " + v);
-//    }
-
     @Override
     public void put(T v) throws InterruptedException {
         while (true) {
@@ -69,22 +60,8 @@ public class RingBuffer<T> implements MessageQueue<T> {
         }
     }
 
-//	@Override
-//	public T take() throws InterruptedException {
-//        while (w.get()<r.get()) /*waitForDataAt(r.get())*/;
-//
-//        //T o = items.get((int) (r.getAndIncrement()%size));
-//        int index = (int) (r.getAndIncrement()%size);
-//        T o = items[index];
-//
-//        if(debug_flag) System.out.println(" ++++++++++++++++++++++++ " + r.get() + " " + (int)(r.get()-1)%size + " " + o);
-//
-//        return o;
-//	}
-
     @Override
     public T take() throws InterruptedException {
-        //while (w.get()<r.get()) /*waitForDataAt(r.get())*/;
 
         while(true) {
             long rIndex = r.get();
@@ -112,7 +89,7 @@ public class RingBuffer<T> implements MessageQueue<T> {
 	void waitForFreeSlotAt(final long writeIndex) {
         if(debug_flag) System.out.println(writeIndex + " " + r.get());
         while (writeIndex-r.get()==sizeMinusOne) try {
-            sleep(1);
+            sleep(0);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -121,7 +98,7 @@ public class RingBuffer<T> implements MessageQueue<T> {
 	void waitForDataAt(final long readIndex) {
         if(debug_flag) System.out.println(readIndex + " " + w.get());
         while (readIndex>w.get()) try {
-            sleep(1);
+            sleep(0);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
