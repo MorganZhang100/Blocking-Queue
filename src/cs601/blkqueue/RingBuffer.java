@@ -6,17 +6,12 @@ import static java.lang.Thread.sleep;
 public class RingBuffer<T> implements MessageQueue<T> {
 	private final AtomicLong w = new AtomicLong(-1);	// just wrote location
 	private final AtomicLong r = new AtomicLong(0);		// about to read location
-
-    boolean debug_flag = false;
-
-    private final int size;
     private final int sizeMinusOne;
 
     T[] items;
 
 	public RingBuffer(int n) {
         items = (T[]) new Object[n];
-        size = n;
         sizeMinusOne = n-1;
 
         if(!isPowerOfTwo(n)) throw new IllegalArgumentException();
@@ -34,60 +29,33 @@ public class RingBuffer<T> implements MessageQueue<T> {
 
     @Override
     public void put(T v) throws InterruptedException {
-        while (true) {
             long wIndex = w.get();
-            long rIndex = r.get();
             long wNewIndex = wIndex+1;
 
-            T preValue = items[(int)wNewIndex & sizeMinusOne];
-
-            if( wIndex-rIndex == sizeMinusOne ) {
+            if( wIndex-r.get() == sizeMinusOne ) {
                 waitForFreeSlotAt(wIndex);
-                continue;
             }
 
             items[(int)wNewIndex & sizeMinusOne] = v;
-
-            if(w.compareAndSet(wIndex,wIndex+1)) {
-                if(debug_flag) System.out.println("--- wNewIndex[" + wNewIndex + "] w.get()" + w.get() + " r.get()（" + r.get() + " ) 在 "  + (int)wNewIndex%size + " 写入 " + v);
-
-                return;
-            }
-            else {
-                items[(int)wNewIndex & sizeMinusOne] = preValue;
-                continue;
-            }
-        }
+            w.incrementAndGet();
     }
 
     @Override
     public T take() throws InterruptedException {
-
-        while(true) {
             long rIndex = r.get();
-            long wIndex = w.get();
 
-            if(wIndex < rIndex) {
+            if(w.get() < rIndex) {
                 waitForDataAt(rIndex);
-                continue;
             }
 
             int index = (int) (rIndex & sizeMinusOne);
 
             T o = items[index];
-
-            if(r.compareAndSet(rIndex,rIndex+1)) {
-
-                if(debug_flag) System.out.println(" ++++++++++++++++++++++++ rIndex[" + rIndex + "] r.get()" + r.get() + " 从 " + (int)(rIndex)%size + " 取出 " + o);
-
-                return o;
-            }
-            else continue;
-        }
+            r.incrementAndGet();
+            return o;
     }
 
 	void waitForFreeSlotAt(final long writeIndex) {
-        if(debug_flag) System.out.println(writeIndex + " " + r.get());
         while (writeIndex-r.get()==sizeMinusOne) try {
             sleep(0);
         } catch (InterruptedException e) {
@@ -96,7 +64,6 @@ public class RingBuffer<T> implements MessageQueue<T> {
     }
 
 	void waitForDataAt(final long readIndex) {
-        if(debug_flag) System.out.println(readIndex + " " + w.get());
         while (readIndex>w.get()) try {
             sleep(0);
         } catch (InterruptedException e) {
