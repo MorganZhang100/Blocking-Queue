@@ -22,6 +22,7 @@ def test():
 	java("cs601.blkqueue.TestSynchronizedBlockingQueue", cp="out", vmargs=["-server"])
 	java("cs601.blkqueue.TestBlockingQueue", cp="out", vmargs=["-server"])
 	java("cs601.blkqueue.TestRingBuffer", cp="out", vmargs=["-server"])
+	java("cs601.blkqueue.TestRingBufferGrading", cp="out", vmargs=["-server"])
 
 def all():
 	test()
