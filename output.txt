@@ -1,0 +1,132 @@
+6765.597ms 1182453.0 events / second
+Producer: (3834 blocked + 1 waiting + 0 sleeping) / 10494 samples = 36.54% wasted
+Consumer: (3278 blocked + 1705 waiting + 0 sleeping) / 10475 samples = 47.57% wasted
+Producer:
+1       java.lang.Object.wait()
+3942    java.lang.Object.notifyAll()
+6008    cs601.blkqueue.SynchronizedBlockingQueue.put()
+542     cs601.blkqueue.Producer.run()
+1       java.util.ArrayList.ensureExplicitCapacity()
+
+Consumer:
+9       java.lang.System.arraycopy()
+3443    java.lang.Object.wait()
+707     cs601.blkqueue.Consumer.run()
+4249    java.lang.Object.notifyAll()
+2067    cs601.blkqueue.SynchronizedBlockingQueue.take()
+39947.807ms 2002613.0 events / second
+Producer: (0 blocked + 6889 waiting + 0 sleeping) / 58533 samples = 11.77% wasted
+Consumer: (0 blocked + 11236 waiting + 0 sleeping) / 58501 samples = 19.21% wasted
+Producer:
+2       java.util.concurrent.locks.AbstractQueuedSynchronizer.enq()
+10      java.util.concurrent.locks.AbstractQueuedSynchronizer.acquireInterruptibly()
+16789   sun.misc.Unsafe.park()
+3       java.util.concurrent.ArrayBlockingQueue.insert()
+17      java.lang.Integer.valueOf()
+95      java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.await()
+17062   cs601.blkqueue.Producer.run()
+7       java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.doSignal()
+19      sun.misc.Unsafe.compareAndSwapInt()
+1       java.util.concurrent.locks.AbstractQueuedSynchronizer.isOnSyncQueue()
+5       java.util.concurrent.locks.AbstractQueuedSynchronizer.findNodeFromTail()
+20      sun.misc.Unsafe.putObject()
+5       sun.misc.Unsafe.compareAndSwapObject()
+1       cs601.blkqueue.IntegerSequence.next()
+1       java.util.concurrent.locks.AbstractQueuedSynchronizer.acquireQueued()
+4       java.util.concurrent.locks.AbstractQueuedSynchronizer.addWaiter()
+6       java.util.concurrent.locks.AbstractQueuedSynchronizer.transferForSignal()
+7       java.util.concurrent.ArrayBlockingQueue.put()
+5       java.util.concurrent.locks.AbstractQueuedSynchronizer.doAcquireInterruptibly()
+35      java.lang.Thread.currentThread()
+24439   sun.misc.Unsafe.unpark()
+
+Consumer:
+110     java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.addConditionWaiter()
+10      java.util.concurrent.locks.AbstractQueuedSynchronizer.acquireInterruptibly()
+1       java.util.concurrent.ArrayBlockingQueue.take()
+19975   sun.misc.Unsafe.park()
+5       java.util.concurrent.locks.AbstractQueuedSynchronizer.fullyRelease()
+832     cs601.blkqueue.Consumer.run()
+1       java.util.concurrent.locks.ReentrantLock.lockInterruptibly()
+203     java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.await()
+3       java.util.concurrent.locks.AbstractQueuedSynchronizer.shouldParkAfterFailedAcquire()
+5       sun.misc.Unsafe.compareAndSwapInt()
+9555    cs601.blkqueue.MessageQueueAdaptor.take()
+6       sun.misc.Unsafe.compareAndSwapObject()
+2       sun.misc.Unsafe.putObject()
+3       java.util.concurrent.ArrayBlockingQueue.extract()
+12      cs601.blkqueue.IntegerSequence.validSequenceMove()
+6       java.util.concurrent.locks.AbstractQueuedSynchronizer.acquireQueued()
+11      java.util.concurrent.locks.AbstractQueuedSynchronizer.addWaiter()
+3       java.util.concurrent.locks.AbstractQueuedSynchronizer.doAcquireInterruptibly()
+90      java.lang.Thread.currentThread()
+27668   sun.misc.Unsafe.unpark()
+9018.629ms 8870528.0 events / second
+Producer: (0 blocked + 0 waiting + 213 sleeping) / 12968 samples = 1.64% wasted
+Consumer: (0 blocked + 0 waiting + 2185 sleeping) / 12963 samples = 16.86% wasted
+Producer:
+298     java.lang.Thread.sleep()
+6       cs601.blkqueue.IntegerSequence.next()
+2       cs601.blkqueue.IntegerSequence.hasNext()
+50      cs601.blkqueue.RingBuffer.waitForFreeSlotAt()
+15      java.lang.Integer.valueOf()
+6       cs601.blkqueue.RingBuffer.put()
+8       sun.misc.Unsafe.compareAndSwapLong()
+12583   cs601.blkqueue.Producer.run()
+
+Consumer:
+2957    java.lang.Thread.sleep()
+11      cs601.blkqueue.IntegerSequence.validSequenceMove()
+9985    cs601.blkqueue.Consumer.run()
+7       sun.misc.Unsafe.compareAndSwapLong()
+1       java.util.concurrent.atomic.AtomicLong.incrementAndGet()
+1       cs601.blkqueue.RingBuffer.waitForDataAt()
+1       cs601.blkqueue.RingBuffer.take()
+0.222ms 4504.5 events / second
+Producer: (0 blocked + 0 waiting + 0 sleeping) / 1 samples = 0.00% wasted
+Consumer: (0 blocked + 0 waiting + 0 sleeping) / 0 samples = NaN% wasted
+Producer:
+
+Consumer:
+13.804ms 579542.2 events / second
+Producer: (0 blocked + 0 waiting + 8 sleeping) / 18 samples = 44.44% wasted
+Consumer: (0 blocked + 0 waiting + 10 sleeping) / 18 samples = 55.56% wasted
+Producer:
+10      java.lang.Thread.sleep()
+1       cs601.blkqueue.IntegerSequence.next()
+1       java.lang.Integer.valueOf()
+1       cs601.blkqueue.RingBuffer.waitForFreeSlotAt()
+5       sun.misc.Unsafe.compareAndSwapLong()
+
+Consumer:
+14      java.lang.Thread.sleep()
+1       cs601.blkqueue.IntegerSequence.validSequenceMove()
+2       sun.misc.Unsafe.compareAndSwapLong()
+1       java.lang.Integer.intValue()
+39.909ms 250570.0 events / second
+Producer: (0 blocked + 0 waiting + 10 sleeping) / 53 samples = 18.87% wasted
+Consumer: (0 blocked + 0 waiting + 12 sleeping) / 52 samples = 23.08% wasted
+Producer:
+18      java.lang.Thread.sleep()
+23      java.lang.Integer.toString()
+3       java.lang.Integer.stringSize()
+8       java.lang.Integer.getChars()
+1       cs601.blkqueue.Producer.run()
+
+Consumer:
+9       java.lang.Thread.sleep()
+7       java.lang.CharacterDataLatin1.digit()
+1       java.lang.String.charAt()
+2       java.lang.Character.digit()
+5       java.lang.CharacterData.of()
+9       cs601.blkqueue.StringSequence.validSequenceMove()
+4       cs601.blkqueue.RingBuffer.take()
+15      java.lang.Integer.parseInt()
+target all
+require compile
+build test
+java -cp out -server cs601.blkqueue.TestSynchronizedBlockingQueue
+java -cp out -server cs601.blkqueue.TestBlockingQueue
+java -cp out -server cs601.blkqueue.TestRingBuffer
+java -cp out -server cs601.blkqueue.TestRingBufferGrading
+bild succeeded
