@@ -55,20 +55,13 @@ public class RingBuffer<T> implements MessageQueue<T> {
             return o;
     }
 
-	void waitForFreeSlotAt(final long writeIndex) {
-        while (writeIndex-r.get()==sizeMinusOne) try {
+	void waitForFreeSlotAt(final long writeIndex) throws InterruptedException {
+        while (writeIndex-r.get()==sizeMinusOne)
             sleep(0);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
     }
 
-	void waitForDataAt(final long readIndex) {
-        while (readIndex>w.get()) try {
+	void waitForDataAt(final long readIndex) throws InterruptedException {
+        while (readIndex>w.get())
             sleep(0);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
     }
 }
