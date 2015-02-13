@@ -69,5 +69,6 @@ public class RingBuffer<T> implements MessageQueue<T> {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+
     }
 }
